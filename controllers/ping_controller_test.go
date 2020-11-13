@@ -13,6 +13,7 @@ import (
 type pongServiceMock struct {
 	pongFn func() (string, error)
 	divideFn func(request []byte) models.Response
+	calculateFn func(request []byte) models.Response
 }
 
 func (mock pongServiceMock) Pong() (string, error) {
@@ -20,6 +21,9 @@ func (mock pongServiceMock) Pong() (string, error) {
 }
 func (mock pongServiceMock) Divide(request []byte) models.Response {
 	return mock.divideFn(request)
+}
+func (mock pongServiceMock) Calculate(request []byte) models.Response {
+	return mock.calculateFn(request)
 }
 
 func TestPingController_Pong(t *testing.T) {
@@ -91,6 +95,43 @@ func TestPingController_Divide(t *testing.T) {
 		c, _ := gin.CreateTestContext(r)
 		c.Set("payload", []byte(`{"a":2, "b":2}`))
 		PingController.Divide(c)
+
+		if r.Code != item.expected {
+			t.Errorf("response code should %v got %v", item.expected, r.Code)
+		}
+	}
+}
+
+func TestPingController_Calculate(t *testing.T) {
+	cases := []struct {
+		testName string
+		calculateFn   func(request []byte) models.Response
+		expected int
+	}{
+		{
+			testName: "Positive: 200",
+			calculateFn: func(request []byte) models.Response {
+				return models.Response{
+					Code: 200,
+					Content: "2 + by 2 is 4",
+					Message: "success",
+				}
+			},
+			expected: 200,
+		},
+	}
+
+	svcMock := pongServiceMock{}
+	for i, item := range cases {
+		fmt.Printf("Testing case %d. %s\n", i+1, item.testName)
+
+		svcMock.calculateFn = item.calculateFn
+		services.PingService = svcMock
+
+		r := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(r)
+		c.Set("payload", []byte(`{"a":2, "operator":"+" "b":2}`))
+		PingController.Calculate(c)
 
 		if r.Code != item.expected {
 			t.Errorf("response code should %v got %v", item.expected, r.Code)

@@ -9,11 +9,6 @@ func ProcessPayload() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.Request.Method == "POST" {
 			payload, _ := c.GetRawData()
-			//fmt.Printf("PPPP :%+v\n", string(a))
-			//jsonByte, err := ioutil.ReadAll(c.Request.Body)
-			//if err != nil {
-			//	panic(err.Error())
-			//}
 			c.Set("payload", payload)
 		}
 		c.Next()
@@ -26,5 +21,6 @@ func main() {
 
 	r.GET("/ping", controllers.PingController.Pong)
 	r.POST("/divide", controllers.PingController.Divide)
+	r.POST("/calculate", controllers.PingController.Calculate)
 	r.Run()
 }

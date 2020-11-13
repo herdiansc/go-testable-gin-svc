@@ -29,3 +29,8 @@ func (controller pingController) Divide(c *gin.Context) {
 	result := services.PingService.Divide(c.MustGet("payload").([]byte))
 	c.JSON(result.Code, result)
 }
+
+func (controller pingController) Calculate(c *gin.Context) {
+	result := services.PingService.Calculate(c.MustGet("payload").([]byte))
+	c.JSON(result.Code, result)
+}
